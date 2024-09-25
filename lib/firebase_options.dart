@@ -56,13 +56,22 @@ class DefaultFirebaseOptions {
     measurementId: 'G-YDHHMWZMNP',
   );
 
+  // static const FirebaseOptions android = FirebaseOptions(
+  //   apiKey: 'AIzaSyC_V-3oTNV8jJQsDHydUVZsGu1BDt86ncE',
+  //   appId: '1:548504345051:android:577e8f3ba002f6d02feffe',
+  //   messagingSenderId: '548504345051',
+  //   projectId: 'webtaskify',
+  //   storageBucket: 'webtaskify.appspot.com',
+  // );
+
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC_V-3oTNV8jJQsDHydUVZsGu1BDt86ncE',
-    appId: '1:548504345051:android:577e8f3ba002f6d02feffe',
-    messagingSenderId: '548504345051',
-    projectId: 'webtaskify',
-    storageBucket: 'webtaskify.appspot.com',
+    apiKey: 'AIzaSyAaMO_y2VtkQmL_Ll5lp8u6P7-eNA0aDqg',
+    appId: '1:319737304688:android:848aeb22fdf5fffd64c6b5',
+    messagingSenderId: '319737304688',
+    projectId: 'taskify-c4cc7',
+    storageBucket: 'taskify-c4cc7.appspot.com',
   );
+
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCtId-blMguBi73eIlXL7j98VkadEvXoUY',

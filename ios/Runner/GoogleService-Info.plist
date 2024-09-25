@@ -2,22 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CLIENT_ID</key>
-	<string>548504345051-0un8e9bhd5pea26vj2pp1g8moaebbri6.apps.googleusercontent.com</string>
-	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.548504345051-0un8e9bhd5pea26vj2pp1g8moaebbri6</string>
 	<key>API_KEY</key>
-	<string>AIzaSyCtId-blMguBi73eIlXL7j98VkadEvXoUY</string>
+	<string>AIzaSyDVYTMZSfsCJ2txEI3GCggqQe0JIRXcnqU</string>
 	<key>GCM_SENDER_ID</key>
-	<string>548504345051</string>
+	<string>319737304688</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.karlmathuthu.taskify.taskify</string>
+	<string>com.leonferdian.taskify.taskify</string>
 	<key>PROJECT_ID</key>
-	<string>webtaskify</string>
+	<string>taskify-c4cc7</string>
 	<key>STORAGE_BUCKET</key>
-	<string>webtaskify.appspot.com</string>
+	<string>taskify-c4cc7.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +25,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:548504345051:ios:9d35c6ac286cf7c32feffe</string>
+	<string>1:319737304688:ios:164eefa06384511264c6b5</string>
+	<key>DATABASE_URL</key>
+	<string>https://taskify-c4cc7-default-rtdb.firebaseio.com</string>
 </dict>
 </plist>
