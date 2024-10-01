@@ -1,9 +1,7 @@
 # Taskify
-
 Taskify is an ongoing open source Android and IOS application that is can be used by UI/UX designers and Developers to collaborate easily by creating a project in Taskify.
 
 ## Screenshots
-
 <img src = "screenshots/taskify_main.jpg"/>
 
 ## Features
@@ -21,6 +19,6 @@ Taskify is an ongoing open source Android and IOS application that is can be use
  In settings i know i'm not done yet so don't be surprised.
 
 ## Developers
-  - Karl Mathuthu.
-  - Leon Ferdian
+  - Karl Mathuthu (Designer)
+  - Leon Ferdian (Developer)
 # Taskify

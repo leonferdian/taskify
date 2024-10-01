@@ -47,22 +47,15 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyApaus8CQYgRB43acx42vb9ziADKzgFji0',
-    appId: '1:548504345051:web:590b5ffb26dcf7a32feffe',
-    messagingSenderId: '548504345051',
-    projectId: 'webtaskify',
-    authDomain: 'webtaskify.firebaseapp.com',
-    storageBucket: 'webtaskify.appspot.com',
-    measurementId: 'G-YDHHMWZMNP',
+    apiKey: "AIzaSyBTnpsh9zVJr9fEZjAFnDR38ZzVI6zR7JA",
+    authDomain: "taskify-c4cc7.firebaseapp.com",
+    databaseURL: "https://taskify-c4cc7-default-rtdb.firebaseio.com",
+    projectId: "taskify-c4cc7",
+    storageBucket: "taskify-c4cc7.appspot.com",
+    messagingSenderId: "319737304688",
+    appId: "1:319737304688:web:709b95b0dacac8a564c6b5",
+    measurementId: "G-GBF2E8KVL3"
   );
-
-  // static const FirebaseOptions android = FirebaseOptions(
-  //   apiKey: 'AIzaSyC_V-3oTNV8jJQsDHydUVZsGu1BDt86ncE',
-  //   appId: '1:548504345051:android:577e8f3ba002f6d02feffe',
-  //   messagingSenderId: '548504345051',
-  //   projectId: 'webtaskify',
-  //   storageBucket: 'webtaskify.appspot.com',
-  // );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAaMO_y2VtkQmL_Ll5lp8u6P7-eNA0aDqg',
@@ -74,12 +67,12 @@ class DefaultFirebaseOptions {
 
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCtId-blMguBi73eIlXL7j98VkadEvXoUY',
-    appId: '1:548504345051:ios:9d35c6ac286cf7c32feffe',
-    messagingSenderId: '548504345051',
+    apiKey: 'AIzaSyDVYTMZSfsCJ2txEI3GCggqQe0JIRXcnqU',
+    appId: '1:319737304688:ios:164eefa06384511264c6b5',
+    messagingSenderId: '319737304688',
     projectId: 'webtaskify',
-    storageBucket: 'webtaskify.appspot.com',
-    iosClientId: '548504345051-0un8e9bhd5pea26vj2pp1g8moaebbri6.apps.googleusercontent.com',
-    iosBundleId: 'com.karlmathuthu.taskify.taskify',
+    storageBucket: 'taskify-c4cc7.appspot.com',
+    iosClientId: '319737304688-6cujd7a5uo0p5sd82sbujjapqkj311g7.apps.googleusercontent.com',
+    iosBundleId: 'com.leonferdian.taskify.taskify',
   );
 }
