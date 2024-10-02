@@ -1,6 +1,6 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -19,7 +19,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final FirebaseDatabase _database = FirebaseDatabase.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
@@ -34,21 +34,21 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.all(15.0),
         child: Column(
           children: [
-            // Header
+            //Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 StreamBuilder(
-                  stream: _database
-                      .ref('users/${_auth.currentUser!.uid}')
-                      .onValue,
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(_auth.currentUser!.uid)
+                      .snapshots(),
                   builder: ((context, snapshot) {
-                    if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                    if (!snapshot.hasData) {
                       return Container();
                     } else {
-                      Map<dynamic, dynamic> userData = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
                       return Text(
-                        'Hello, ${userData['name']}',
+                        'Hello, ${snapshot.data!.get('name')}',
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
@@ -59,24 +59,30 @@ class _HomePageState extends State<HomePage> {
                 ),
                 IconButton(
                   onPressed: () {},
-                  icon: Icon(Icons.notifications, color: Colors.black),
-                ),
+                  icon: SvgPicture.asset(
+                    'assets/icons/notifications.svg',
+                    color: Colors.black,
+                  ),
+                )
               ],
             ),
-            SizedBox(height: 25),
-            // Body layout
+            SizedBox(
+              height: 25,
+            ),
+            //Body layout.
             Expanded(
               child: SingleChildScrollView(
                 physics: BouncingScrollPhysics(),
                 child: Column(
                   children: [
-                    // Blue top card
+                    //Blue top card.
                     Container(
                       padding: EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        color: ThemeColors().blue,
                         borderRadius: BorderRadius.circular(25),
                       ),
+                      // height: 140,
                       width: double.infinity,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,28 +94,30 @@ class _HomePageState extends State<HomePage> {
                               fontSize: 16,
                             ),
                           ),
-                          SizedBox(height: 20),
+                          SizedBox(
+                            height: 20,
+                          ),
                           StreamBuilder(
-                            stream: _database
-                                .ref('users/${_auth.currentUser!.uid}/projects')
-                                .orderByChild('finished')
-                                .equalTo(false)
-                                .onValue,
+                            stream: FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(_auth.currentUser!.uid)
+                                .collection('projects')
+                                .where('finished', isEqualTo: false)
+                                .snapshots(),
                             builder: ((context, snapshot) {
-                              if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                              if (!snapshot.hasData) {
                                 return Container();
                               } else {
-                                Map<dynamic, dynamic> projects = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-                                return projects.length > 1
+                                return snapshot.data!.docs.length > 1
                                     ? Text(
-                                        '${projects.length} projects',
+                                        '${snapshot.data!.docs.length} projects',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 28,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       )
-                                    : projects.isEmpty
+                                    : snapshot.data!.docs.isEmpty
                                         ? Text(
                                             'You have no projects',
                                             style: TextStyle(
@@ -119,7 +127,7 @@ class _HomePageState extends State<HomePage> {
                                             ),
                                           )
                                         : Text(
-                                            '${projects.length} project',
+                                            '${snapshot.data!.docs.length} project',
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 28,
@@ -132,8 +140,10 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 25),
-                    // In progress section
+                    SizedBox(
+                      height: 25,
+                    ),
+                    //In progress section.
                     Row(
                       children: [
                         Text(
@@ -144,30 +154,32 @@ class _HomePageState extends State<HomePage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(width: 10),
+                        SizedBox(
+                          width: 10,
+                        ),
                         Container(
                           height: 25,
                           width: 30,
                           decoration: BoxDecoration(
-                            color: Colors.grey.withOpacity(0.5),
+                            color: ThemeColors().grey.withOpacity(0.5),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: StreamBuilder(
-                            stream: _database
-                                .ref('users/${_auth.currentUser!.uid}/projects')
-                                .orderByChild('finished')
-                                .equalTo(false)
-                                .onValue,
+                            stream: FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(_auth.currentUser!.uid)
+                                .collection('projects')
+                                .where('finished', isEqualTo: false)
+                                .snapshots(),
                             builder: (context, snapshot) {
-                              if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                              if (!snapshot.hasData) {
                                 return Container();
                               } else {
-                                Map<dynamic, dynamic> projects = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
                                 return Center(
                                   child: Text(
-                                    projects.length.toString(),
+                                    snapshot.data!.docs.length.toString(),
                                     style: TextStyle(
-                                      color: Colors.pink,
+                                      color: ThemeColors().pink,
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -179,31 +191,37 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 15),
-                    // In progress Stream builder
+                    SizedBox(
+                      height: 15,
+                    ),
+                    //In progress Stream bulder.
                     SizedBox(
                       height: 140,
                       child: StreamBuilder(
-                        stream: _database
-                            .ref('users/${_auth.currentUser!.uid}/projects')
-                            .orderByChild('finished')
-                            .equalTo(false)
-                            .onValue,
+                        stream: FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(_auth.currentUser!.uid)
+                            .collection('projects')
+                            .where('finished', isEqualTo: false)
+                            .snapshots(),
                         builder: (context, snapshot) {
-                          if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                          if (!snapshot.hasData) {
                             return Container();
                           } else {
-                            Map<dynamic, dynamic> projects = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
                             return ListView.builder(
-                              itemCount: projects.length,
+                              itemCount: snapshot.data!.docs.length,
                               physics: BouncingScrollPhysics(),
                               scrollDirection: Axis.horizontal,
                               itemBuilder: ((context, index) {
-                                var project = projects.values.elementAt(index);
-                                var time = DateFormat('d MMM y').format(DateTime.parse(project['createDate']));
+                                var a = DateTime.parse(snapshot
+                                    .data!.docs[index]['createDate']
+                                    .toDate()
+                                    .toString());
+                                var time = DateFormat('d MMM y').format(a);
                                 return CustomContainer(
-                                  description: project['description'],
-                                  title: project['name'],
+                                  description: snapshot.data!.docs[index]
+                                      ['description'],
+                                  title: snapshot.data!.docs[index]['name'],
                                   createDate: time,
                                 );
                               }),
@@ -212,8 +230,9 @@ class _HomePageState extends State<HomePage> {
                         },
                       ),
                     ),
-                    SizedBox(height: 20),
-                    // Finished projects section
+                    SizedBox(
+                      height: 20,
+                    ),
                     Row(
                       children: [
                         Text(
@@ -224,30 +243,32 @@ class _HomePageState extends State<HomePage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(width: 10),
+                        SizedBox(
+                          width: 10,
+                        ),
                         StreamBuilder(
-                          stream: _database
-                              .ref('users/${_auth.currentUser!.uid}/projects')
-                              .orderByChild('finished')
-                              .equalTo(true)
-                              .onValue,
+                          stream: FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(_auth.currentUser!.uid)
+                              .collection('projects')
+                              .where('finished', isEqualTo: true)
+                              .snapshots(),
                           builder: ((context, snapshot) {
-                            if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                            if (!snapshot.hasData) {
                               return Container();
                             } else {
-                              Map<dynamic, dynamic> finishedProjects = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
                               return Container(
                                 height: 25,
                                 width: 30,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey.withOpacity(0.5),
+                                  color: ThemeColors().grey.withOpacity(0.5),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Center(
                                   child: Text(
-                                    finishedProjects.length.toString(),
+                                    snapshot.data!.docs.length.toString(),
                                     style: TextStyle(
-                                      color: Colors.pink,
+                                      color: ThemeColors().pink,
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -259,30 +280,34 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ],
                     ),
-                    // Finished projects ListView
+                    //Listview builder.
                     StreamBuilder(
-                      stream: _database
-                          .ref('users/${_auth.currentUser!.uid}/projects')
-                          .orderByChild('finished')
-                          .equalTo(true)
-                          .onValue,
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(_auth.currentUser!.uid)
+                          .collection('projects')
+                          .where('finished', isEqualTo: true)
+                          .snapshots(),
                       builder: ((context, snapshot) {
-                        if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                        if (!snapshot.hasData) {
                           return Container();
                         } else {
-                          Map<dynamic, dynamic> finishedProjects = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
                           return ListView.builder(
-                            itemCount: finishedProjects.length,
+                            itemCount: snapshot.data!.docs.length,
                             shrinkWrap: true,
                             physics: NeverScrollableScrollPhysics(),
                             itemBuilder: ((context, index) {
-                              var project = finishedProjects.values.elementAt(index);
-                              var time = DateFormat('d MMM y').format(DateTime.parse(project['createDate']));
+                              var a = DateTime.parse(snapshot
+                                  .data!.docs[index]['createDate']
+                                  .toDate()
+                                  .toString());
+                              var time = DateFormat('d MMM y').format(a);
                               return WidgetHome(
-                                description: project['description'],
+                                description: (snapshot.data!.docs[index]
+                                    ['description']),
                                 progress_percentage: '100',
                                 createDate: time,
-                                title: project['name'],
+                                title: (snapshot.data!.docs[index]['name']),
                               );
                             }),
                           );
@@ -296,7 +321,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      // New project floating action button
+      //New project floating action button.
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
@@ -308,7 +333,7 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         },
-        backgroundColor: Colors.blue,
+        backgroundColor: ThemeColors().blue,
         label: Text(
           'New project',
           style: TextStyle(

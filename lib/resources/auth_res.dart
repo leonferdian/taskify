@@ -1,10 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthRes {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseDatabase _database = FirebaseDatabase.instance;
 
   Future<String> createAccount(

@@ -3,8 +3,8 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -34,7 +34,7 @@ class _PersonalProjectState extends State<PersonalProject> {
   final TextEditingController _name = TextEditingController();
   final TextEditingController _description = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseDatabase _database = FirebaseDatabase.instance; // Change here from Firestore to Realtime Database
 
   Uint8List? _image;
   final CustomLoader _loader = CustomLoader();
@@ -67,69 +67,64 @@ class _PersonalProjectState extends State<PersonalProject> {
     'https://firebasestorage.googleapis.com/v0/b/webtaskify.appspot.com/o/illustrations%2FScenes09.png?alt=media&token=0cbe7df9-cb76-46ce-a7cd-226d4525c3b5',
   ];
 
-  //Function for creating project
+  // Function for creating a new project using Realtime Database
   createNewProject() async {
     String projectId = Uuid().v1();
     String name = _name.text.trim();
     String description = _description.text.trim();
-    var illustrationList =
-        _illustrations[Random().nextInt(_illustrations.length)];
+    var illustrationList = _illustrations[Random().nextInt(_illustrations.length)];
 
     try {
       String logoUrl = await StorageRes().uploadImageToStorage(
         _image!,
       );
-      //Create project seperate collection
-      _firestore.collection('projects').doc(projectId).set({
+
+      // Create project in a separate location in Realtime Database
+      await _database.ref('projects/$projectId').set({
         'projectId': projectId,
         'members': widget.membersList,
         'name': name,
         'description': description,
-        'createDate': DateTime.now(),
+        'createDate': DateTime.now().toIso8601String(),
         'finished': false,
         'logoUrl': logoUrl,
         'illustration': illustrationList,
         'admin': _auth.currentUser!.uid,
       });
+
+      // Add project to all selected users in Realtime Database
       for (int i = 0; i < widget.membersList.length; i++) {
         String uid = widget.membersList[i]['uid'];
-        //Add project to all selected users
-        _firestore
-            .collection('users')
-            .doc(uid)
-            .collection('projects')
-            .doc(projectId)
-            .set({
+        await _database.ref('users/$uid/projects/$projectId').set({
           'name': name,
           'description': description,
-          'createDate': DateTime.now(),
+          'createDate': DateTime.now().toIso8601String(),
           'finished': false,
           'logoUrl': logoUrl,
           'illustration': illustrationList,
           'admin': _auth.currentUser!.uid,
           'projectId': projectId,
         });
-        //Send a welcome message
-        _firestore
-            .collection('projects')
-            .doc(projectId)
-            .collection('chats')
-            .add({
+
+        // Send a welcome message to the project's chat collection
+        await _database.ref('projects/$projectId/chats').push().set({
           'message': 'Project was created',
           'type': 'welcome',
         });
-        Fluttertoast.showToast(
-          msg: "Project created",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.green,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
-        _loader.hideLoader();
-        Navigator.pop(context);
       }
+
+      Fluttertoast.showToast(
+        msg: "Project created",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+
+      _loader.hideLoader();
+      Navigator.pop(context);
     } catch (error) {
       Fluttertoast.showToast(
         msg: error.toString(),

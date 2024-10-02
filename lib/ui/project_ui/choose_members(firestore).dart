@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:badges/badges.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -22,7 +22,7 @@ class ChooseMembers extends StatefulWidget {
 
 class _ChooseMembersState extends State<ChooseMembers> {
   bool isSelected = false;
-  final FirebaseDatabase _database = FirebaseDatabase.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _controller = TextEditingController();
   List<Map<String, dynamic>> membersList = [];
@@ -31,25 +31,17 @@ class _ChooseMembersState extends State<ChooseMembers> {
   onSearch() async {
     if (_controller.text.trim().toLowerCase().isNotEmpty) {
       try {
-        await _database
-            .reference()
-            .child('users')
-            .orderByChild('email')
-            .equalTo(_controller.text.toLowerCase())
-            .once()
-            .then((DatabaseEvent event) {
-          final dataSnapshot = event.snapshot;
-
-          if (dataSnapshot.value != null) {
-            final data = dataSnapshot.value as Map<dynamic, dynamic>;
-            // Get the first result (since email is unique)
-            final firstUser = data.values.first as Map<dynamic, dynamic>;
-
-            setState(() {
-              // Convert the dynamic map to a map with String keys
-              userMap = firstUser.map((key, value) => MapEntry(key.toString(), value));
-            });
-          }
+        await _firestore
+            .collection('users')
+            .where(
+              'email',
+              isEqualTo: _controller.text.toLowerCase(),
+            )
+            .get()
+            .then((value) {
+          setState(() {
+            userMap = value.docs[0].data();
+          });
         });
       } catch (error) {
         Fluttertoast.showToast(
@@ -62,34 +54,25 @@ class _ChooseMembersState extends State<ChooseMembers> {
           fontSize: 16.0,
         );
       }
-    }
+    } else {}
   }
-
-
 
   getCurrentUserDetails() async {
-    await _database
-        .reference()
-        .child('users')
-        .child(_auth.currentUser!.uid)
-        .once()
-        .then((DatabaseEvent event) {
-      final dataSnapshot = event.snapshot;
-
-      if (dataSnapshot.value != null) {
-        final map = dataSnapshot.value as Map<dynamic, dynamic>;
-        setState(() {
-          membersList.add({
-            'name': map['name'],
-            'email': map['email'],
-            'uid': map['uid'],
-            'photoUrl': map['photoUrl'],
-          });
+    await _firestore
+        .collection('users')
+        .doc(_auth.currentUser!.uid)
+        .get()
+        .then((map) {
+      setState(() {
+        membersList.add({
+          'name': map['name'],
+          'email': map['email'],
+          'uid': map['uid'],
+          'photoUrl': map['photoUrl'],
         });
-      }
+      });
     });
   }
-
 
   onResultTap() async {
     bool memberAlreadyExists = false;
@@ -110,7 +93,7 @@ class _ChooseMembersState extends State<ChooseMembers> {
       });
     } else {
       Fluttertoast.showToast(
-          msg: "Member already exists",
+          msg: "Member already axists",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
