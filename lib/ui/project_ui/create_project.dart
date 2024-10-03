@@ -3,6 +3,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'dart:developer' as developer;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -75,6 +76,10 @@ class _PersonalProjectState extends State<PersonalProject> {
     var illustrationList = _illustrations[Random().nextInt(_illustrations.length)];
 
     try {
+      if (_image == null) {
+        throw Exception('No image selected for upload.');
+      }
+
       String logoUrl = await StorageRes().uploadImageToStorage(
         _image!,
       );
@@ -126,6 +131,7 @@ class _PersonalProjectState extends State<PersonalProject> {
       _loader.hideLoader();
       Navigator.pop(context);
     } catch (error) {
+      developer.log('Error creating project: $error');
       Fluttertoast.showToast(
         msg: error.toString(),
         toastLength: Toast.LENGTH_SHORT,
@@ -138,6 +144,7 @@ class _PersonalProjectState extends State<PersonalProject> {
       Navigator.pop(context);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
