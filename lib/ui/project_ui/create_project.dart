@@ -76,15 +76,16 @@ class _PersonalProjectState extends State<PersonalProject> {
     var illustrationList = _illustrations[Random().nextInt(_illustrations.length)];
 
     try {
+      // Check if the image is not null
       if (_image == null) {
         throw Exception('No image selected for upload.');
       }
 
-      String logoUrl = await StorageRes().uploadImageToStorage(
-        _image!,
-      );
+      // Upload the image and get the URL
+      String logoUrl = await StorageRes().uploadImageToStorage(_image!);
+      print('Logo URL: $logoUrl');
 
-      // Create project in a separate location in Realtime Database
+      // Create project in the Realtime Database
       await _database.ref('projects/$projectId').set({
         'projectId': projectId,
         'members': widget.membersList,
@@ -131,7 +132,11 @@ class _PersonalProjectState extends State<PersonalProject> {
       _loader.hideLoader();
       Navigator.pop(context);
     } catch (error) {
-      developer.log('Error creating project: $error');
+      // Log the error in detail
+      // developer.log('Error creating project: ${error.toString()}');
+      print('Error creating project: ${error.toString()}');
+      
+      // Show the error message in a toast
       Fluttertoast.showToast(
         msg: error.toString(),
         toastLength: Toast.LENGTH_SHORT,
@@ -141,10 +146,11 @@ class _PersonalProjectState extends State<PersonalProject> {
         textColor: Colors.white,
         fontSize: 16.0,
       );
+
+      _loader.hideLoader();
       Navigator.pop(context);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
