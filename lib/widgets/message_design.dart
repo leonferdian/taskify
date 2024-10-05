@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,14 +32,17 @@ class MessageDesign extends StatefulWidget {
 
 class _MessageDesignState extends State<MessageDesign> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseDatabase _database = FirebaseDatabase.instance;
 
   deleteMessage() async {
-    await FirebaseFirestore.instance
-        .collection('projects')
-        .doc(widget.projectId)
-        .collection('chats')
-        .doc(widget.messageIndex)
-        .delete();
+    // Use Realtime Database reference to delete the message
+    await _database
+        .reference()
+        .child('projects')
+        .child(widget.projectId)
+        .child('chats')
+        .child(widget.messageIndex)
+        .remove();
   }
 
   showDeleteMsgDialog() async {
@@ -223,16 +226,22 @@ class _MessageDesignState extends State<MessageDesign> {
                         children: [
                           //Fetch for the sender Name with senderId.
                           StreamBuilder(
-                              stream: FirebaseFirestore.instance
-                                  .collection('users')
-                                  .doc(widget.senderId)
-                                  .snapshots(),
+                              stream: _database
+                                  .reference()
+                                  .child('users')
+                                  .child(widget.senderId)
+                                  .onValue,
                               builder: (context, snapshot) {
-                                if (snapshot.hasData) {
-                                  return Text(
-                                    snapshot.data!.get('name') +
-                                        ' ' +
-                                        snapshot.data!.get('surname'),
+                                if (snapshot.hasData &&
+                                    snapshot.data!.snapshot.value != null) {
+                                  final userData = snapshot.data!.snapshot.value;
+                                  // Ensure userData is treated as a Map<String, dynamic>
+                                  final userMap = userData as Map<dynamic, dynamic>?; // Cast to a Map if necessary
+
+                                  final name = userMap?['name'] ?? 'Unknown'; // Use null-aware operator
+                                  final surname = userMap?['surname'] ?? ''; // Default to empty string if null
+                                   return Text(
+                                    '$name $surname',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,

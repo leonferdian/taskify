@@ -1,33 +1,49 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class ChatRes {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseDatabase _database = FirebaseDatabase.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<String> sendMessage(String message, String projectIndex) async {
-    String res = 'Some error occured';
+    String res = 'Some error occurred';
     try {
-      await _firestore
-          .collection('users')
-          .doc(_auth.currentUser!.uid)
-          .collection('projects')
-          .doc(projectIndex)
-          .collection('messages')
-          .add({
+      DatabaseReference messagesRef = _database
+          .ref()
+          .child('users')
+          .child(_auth.currentUser!.uid)
+          .child('projects')
+          .child(projectIndex)
+          .child('messages');
+
+      await messagesRef.push().set({
         'message': message,
         'type': 'text',
-        'time': DateTime.now(),
+        'time': DateTime.now().toIso8601String(), // Store date as a string in ISO format
         'senderId': _auth.currentUser!.uid,
       });
 
       res = 'success';
-    } catch (error) {   
+    } catch (error) {
       res = error.toString();
     }
     return res;
   }
 
-  Future deleteMessage() async {}
+  Future deleteMessage(String projectIndex, String messageKey) async {
+    try {
+      DatabaseReference messageRef = _database
+          .ref()
+          .child('users')
+          .child(_auth.currentUser!.uid)
+          .child('projects')
+          .child(projectIndex)
+          .child('messages')
+          .child(messageKey);
+
+      await messageRef.remove();
+    } catch (error) {
+      print(error);
+    }
+  }
 }

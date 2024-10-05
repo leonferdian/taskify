@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -18,6 +18,8 @@ class ProjectsChat extends StatefulWidget {
 
 class _ProjectsChatState extends State<ProjectsChat> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseDatabase _database = FirebaseDatabase.instance;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,17 +30,16 @@ class _ProjectsChatState extends State<ProjectsChat> {
       ),
       body: Container(
         color: Colors.white,
-        //Main column layout
         child: Column(
           children: [
-            //header title section.
+            // Header title section.
             Padding(
               padding: const EdgeInsets.all(15.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Disscussions',
+                    'Discussions',
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
@@ -55,13 +56,13 @@ class _ProjectsChatState extends State<ProjectsChat> {
               ),
             ),
 
-            //New messages section.
+            // New messages section.
             Expanded(
               child: SingleChildScrollView(
                 physics: BouncingScrollPhysics(),
                 child: Column(
                   children: [
-                    //Projects Section.
+                    // Projects Section.
                     Padding(
                       padding:
                           const EdgeInsets.only(left: 15, bottom: 15, top: 10),
@@ -86,11 +87,10 @@ class _ProjectsChatState extends State<ProjectsChat> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: StreamBuilder(
-                              stream: FirebaseFirestore.instance
-                                  .collection('projects')
-                                  .snapshots(),
+                              stream: _database.ref('projects').onValue,
                               builder: (context, snapshot) {
-                                if (!snapshot.hasData) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
                                   return Center(
                                     child: Text(
                                       '0',
@@ -101,10 +101,26 @@ class _ProjectsChatState extends State<ProjectsChat> {
                                       ),
                                     ),
                                   );
+                                } else if (snapshot.hasData &&
+                                    snapshot.data!.snapshot.value != null) {
+                                  // Cast the value to Map<dynamic, dynamic>
+                                  Map<dynamic, dynamic> projectData =
+                                      (snapshot.data!.snapshot.value
+                                          as Map<dynamic, dynamic>);
+                                  return Center(
+                                    child: Text(
+                                      projectData.length.toString(),
+                                      style: TextStyle(
+                                        color: ThemeColors().pink,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  );
                                 } else {
                                   return Center(
                                     child: Text(
-                                      snapshot.data!.docs.length.toString(),
+                                      '0',
                                       style: TextStyle(
                                         color: ThemeColors().pink,
                                         fontSize: 14,
@@ -120,52 +136,52 @@ class _ProjectsChatState extends State<ProjectsChat> {
                       ),
                     ),
 
-                    //Projects Lists.
+                    // Projects List
                     StreamBuilder(
-                      stream: FirebaseFirestore.instance
-                          .collection('projects')
-                          .snapshots(),
+                      stream: _database.ref('projects').onValue,
                       builder: ((context, snapshot) {
-                        if (!snapshot.hasData) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return Container();
-                        } else {
+                        } else if (snapshot.hasData &&
+                            snapshot.data!.snapshot.value != null) {
+                          // Cast the value to Map<dynamic, dynamic>
+                          Map<dynamic, dynamic> projects = (snapshot
+                              .data!.snapshot.value as Map<dynamic, dynamic>);
+
                           return ListView.builder(
-                            itemCount: snapshot.data!.docs.length,
+                            itemCount: projects.length,
                             physics: NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
                             itemBuilder: ((context, index) {
-                              var description = snapshot
-                                  .data!.docs[index]['description']
-                                  .toString();
-                              var a = DateTime.parse(snapshot
-                                  .data!.docs[index]['createDate']
-                                  .toDate()
-                                  .toString());
+                              // Convert map to list and access project by index
+                              var project = projects.values.elementAt(index);
+                              var description = project['description'];
+                              var a = DateTime.parse(project['createDate']);
                               var time = DateFormat('d MMM y').format(a);
+
                               return ListTileWidget(
                                 onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => ProjectsChatPage(
-                                        projectName: snapshot.data!.docs[index]
-                                            ['name'],
-                                        projectId: snapshot.data!.docs[index]
-                                            ['projectId'],
-                                        projectLogo: snapshot.data!.docs[index]
-                                            ['logoUrl'],
+                                        projectName: project['name'],
+                                        projectId: project['projectId'],
+                                        projectLogo: project['logoUrl'],
                                         createDate: time,
                                       ),
                                     ),
                                   );
                                 },
-                                appLogoUrl: snapshot.data!.docs[index]
-                                    ['logoUrl'],
+                                appLogoUrl: project['logoUrl'],
                                 lastMessage: description,
-                                title: snapshot.data!.docs[index]['name'],
+                                title: project['name'],
                               );
                             }),
                           );
+                        } else {
+                          return Container();
                         }
                       }),
                     ),
