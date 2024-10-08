@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:badges/badges.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,8 +23,34 @@ class _ChooseMembersState extends State<ChooseMembers> {
   final FirebaseDatabase _database = FirebaseDatabase.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _controller = TextEditingController();
-  List<Map<String, dynamic>> membersList = [];
+  List<Map<String, dynamic>> membersList = []; // Selected members
+  List<Map<String, dynamic>> allUsers = []; // All users
   Map<String, dynamic>? userMap;
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentUserDetails();
+    fetchAllUsers(); // Fetch all users when the widget is initialized
+  }
+
+  // Fetch all users from the database
+  fetchAllUsers() async {
+    await _database.reference().child('users').once().then((DatabaseEvent event) {
+      final dataSnapshot = event.snapshot;
+      if (dataSnapshot.value != null) {
+        final data = dataSnapshot.value as Map<dynamic, dynamic>;
+        setState(() {
+          allUsers = data.values.map((user) {
+            return user as Map<dynamic, dynamic>;
+          }).toList().map((user) {
+            // Convert the dynamic map to a map with String keys
+            return user.map((key, value) => MapEntry(key.toString(), value));
+          }).toList();
+        });
+      }
+    });
+  }
 
   onSearch() async {
     if (_controller.text.trim().toLowerCase().isNotEmpty) {
@@ -49,6 +73,11 @@ class _ChooseMembersState extends State<ChooseMembers> {
               // Convert the dynamic map to a map with String keys
               userMap = firstUser.map((key, value) => MapEntry(key.toString(), value));
             });
+          } else {
+            // Clear userMap if no results are found
+            setState(() {
+              userMap = null;
+            });
           }
         });
       } catch (error) {
@@ -62,10 +91,13 @@ class _ChooseMembersState extends State<ChooseMembers> {
           fontSize: 16.0,
         );
       }
+    } else {
+      // If no search input, clear userMap
+      setState(() {
+        userMap = null;
+      });
     }
   }
-
-
 
   getCurrentUserDetails() async {
     await _database
@@ -89,7 +121,6 @@ class _ChooseMembersState extends State<ChooseMembers> {
       }
     });
   }
-
 
   onResultTap() async {
     bool memberAlreadyExists = false;
@@ -138,12 +169,6 @@ class _ChooseMembersState extends State<ChooseMembers> {
   }
 
   @override
-  void initState() {
-    getCurrentUserDetails();
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -162,6 +187,7 @@ class _ChooseMembersState extends State<ChooseMembers> {
         physics: BouncingScrollPhysics(),
         child: Column(
           children: [
+            // Show existing members list
             ListView.builder(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
@@ -194,6 +220,7 @@ class _ChooseMembersState extends State<ChooseMembers> {
                 );
               }),
             ),
+            // Search input field
             TextFieldWidget(
               onSubmitted: (value) {
                 onSearch();
@@ -214,6 +241,7 @@ class _ChooseMembersState extends State<ChooseMembers> {
                 fit: BoxFit.none,
               ),
             ),
+            // Show search result
             userMap != null
                 ? ListTile(
                     onTap: onResultTap,
@@ -239,26 +267,55 @@ class _ChooseMembersState extends State<ChooseMembers> {
                     ),
                   )
                 : SizedBox(),
+            // Display all users below the search field
+            ...allUsers.map((user) {
+              // Check if the user is already in membersList to prevent duplicates
+              bool isMember = membersList.any((member) => member['uid'] == user['uid']);
+              return ListTile(
+                onTap: () {
+                  if (!isMember) {
+                    setState(() {
+                      membersList.add({
+                        'name': user['name'],
+                        'uid': user['uid'],
+                        'photoUrl': user['photoUrl'],
+                        'email': user['email'],
+                      });
+                    });
+                  } else {
+                    Fluttertoast.showToast(
+                      msg: "Member already exists",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white,
+                      fontSize: 16.0,
+                    );
+                  }
+                },
+                title: Text(user['name']),
+                subtitle: Text(user['email']),
+                leading: Container(
+                  height: 50,
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: ThemeColors().grey,
+                    borderRadius: BorderRadius.circular(15),
+                    image: DecorationImage(
+                      image: NetworkImage(user['photoUrl']),
+                    ),
+                  ),
+                ),
+                trailing: Icon(
+                  isMember ? Icons.check : Icons.add,
+                  color: isMember ? Colors.green : Colors.black,
+                ),
+              );
+            }).toList(),
           ],
         ),
       ),
-      floatingActionButton: membersList.length >= 2
-          ? FloatingActionButton(
-              backgroundColor: ThemeColors().blue,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PersonalProject(
-                      membersList: membersList,
-                    ),
-                  ),
-                );
-                //Navigator.pop(context);
-              },
-              child: Icon(Icons.arrow_forward),
-            )
-          : SizedBox(),
     );
   }
 }
