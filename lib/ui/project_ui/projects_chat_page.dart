@@ -1,6 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -16,6 +16,7 @@ class ProjectsChatPage extends StatefulWidget {
   final String projectId;
   final String projectLogo;
   final String createDate;
+
   const ProjectsChatPage({
     super.key,
     required this.projectName,
@@ -30,6 +31,8 @@ class ProjectsChatPage extends StatefulWidget {
 
 class _ProjectsChatPageState extends State<ProjectsChatPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseDatabase _database = FirebaseDatabase.instance;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,9 +54,7 @@ class _ProjectsChatPageState extends State<ProjectsChatPage> {
                 ),
               ),
             ),
-            SizedBox(
-              width: 10,
-            ),
+            SizedBox(width: 10),
             Text(widget.projectName),
           ],
         ),
@@ -95,7 +96,7 @@ class _ProjectsChatPageState extends State<ProjectsChatPage> {
                             ),
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                   Text(
@@ -106,54 +107,61 @@ class _ProjectsChatPageState extends State<ProjectsChatPage> {
                       fontSize: 12,
                     ),
                   ),
-                  SizedBox(
-                    height: 10,
-                  ),
+                  SizedBox(height: 10),
                   StreamBuilder(
-                      stream: FirebaseFirestore.instance
-                          .collection('projects')
-                          .doc(widget.projectId)
-                          .collection('chats')
-                          .orderBy('date', descending: true)
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return ListView.builder(
-                            reverse: true,
-                            itemCount: snapshot.data!.docs.length,
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemBuilder: ((context, index) {
-                              var a = DateTime.parse(snapshot
-                                  .data!.docs[index]['date']
-                                  .toDate()
-                                  .toString());
-                              var time = DateFormat('HH:mm').format(a);
+                    stream: _database
+                        .reference()
+                        .child('projects')
+                        .child(widget.projectId)
+                        .child('chats')
+                        .onValue,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+                        final messagesMap = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                        final messagesList = messagesMap.entries.toList();
 
-                              bool isMe = snapshot.data!.docs[index]
-                                      ['senderId'] ==
-                                  _auth.currentUser!.uid;
+                        return ListView.builder(
+                          reverse: true,
+                          itemCount: messagesList.length,
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            var messageData = messagesList[index].value;
 
-                              return MessageDesign(
-                                isMe: isMe,
-                                message: snapshot.data!.docs[index]['message'],
-                                time: time,
-                                senderId: snapshot.data!.docs[index]
-                                    ['senderId'],
-                                projectId: widget.projectId,
-                                messageIndex: snapshot.data!.docs[index].id,
-                              );
-                            }),
-                          );
-                        } else {
-                          return Container();
-                        }
-                      }),
+                            // Safely accessing fields
+                            String? dateTimeString = messageData['date'] as String?;
+                            String? senderId = messageData['senderId'] as String?;
+                            String? messageText = messageData['message'] as String?;
+
+                            // Handle potential nulls for date and message
+                            if (dateTimeString == null || messageText == null || senderId == null) {
+                              return Container(); // Skip this message if any crucial field is null
+                            }
+
+                            var a = DateTime.parse(dateTimeString);
+                            var time = DateFormat('HH:mm').format(a);
+                            bool isMe = senderId == _auth.currentUser?.uid;
+
+                            return MessageDesign(
+                              isMe: isMe,
+                              message: messageText,
+                              time: time,
+                              senderId: senderId,
+                              projectId: widget.projectId,
+                              messageIndex: messagesList[index].key, // Get the key for the message
+                            );
+                          },
+                        );
+                      } else {
+                        return Container(); // Handle the loading or empty state
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
           ),
-          //Bottom Container
+          // Bottom Container
           BottomContainerChat(
             projectId: widget.projectId,
           ),

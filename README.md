@@ -19,6 +19,6 @@ Taskify is an ongoing open source Android and IOS application that is can be use
  In settings i know i'm not done yet so don't be surprised.
 
 ## Developers
-  - Karl Mathuthu (Designer)
-  - Leon Ferdian (Developer)
-# Taskify
+  - Leon Ferdian
+# Designer
+  - Karl Mathuthu

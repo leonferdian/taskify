@@ -2,8 +2,8 @@
 
 import 'dart:math';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:taskify/theme/theme_colors.dart';
@@ -18,7 +18,7 @@ class ProjectsList extends StatefulWidget {
 
 class _ProjectsListState extends State<ProjectsList> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseDatabase _database = FirebaseDatabase.instance; // Using Realtime Database
   final List<Color> _list = [
     ThemeColors().blue,
     ThemeColors().pink,
@@ -67,31 +67,35 @@ class _ProjectsListState extends State<ProjectsList> {
               //Body
               Expanded(
                 child: StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(_auth.currentUser!.uid)
-                      .collection('projects')
-                      .snapshots(),
+                  stream: _database
+                      .ref('users/${_auth.currentUser!.uid}/projects')
+                      .onValue,
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return Container();
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                      return Center(child: Text('No projects found.'));
                     } else {
+                      Map<dynamic, dynamic> projects = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                      List<dynamic> projectList = projects.values.toList();
+
                       return ListView.builder(
-                        itemCount: snapshot.data!.docs.length,
+                        itemCount: projectList.length,
                         physics: BouncingScrollPhysics(),
                         itemBuilder: ((context, index) {
-                          var colorsList =
-                              _list[Random().nextInt(_list.length)];
+                          var colorsList = _list[Random().nextInt(_list.length)];
+                          var project = projectList[index];
+
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 10),
                             child: ListContainer(
                               colorsList: colorsList,
-                              illustration: snapshot.data!.docs[index]
-                                  ['illustration'],
-                              description: snapshot.data!.docs[index]
-                                  ['description'],
-                              title: snapshot.data!.docs[index]['name'],
-                              logourl: snapshot.data!.docs[index]['logoUrl'],
+                              illustration: project['illustration'],
+                              description: project['description'],
+                              title: project['name'],
+                              logourl: project['logoUrl'],
                             ),
                           );
                         }),

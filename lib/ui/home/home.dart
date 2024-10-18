@@ -39,23 +39,37 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 StreamBuilder(
-                  stream: _database
-                      .ref('users/${_auth.currentUser!.uid}')
-                      .onValue,
-                  builder: ((context, snapshot) {
+                  stream: _database.ref('users/${_auth.currentUser!.uid}').onValue,
+                  builder: (context, snapshot) {
                     if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
                       return Container();
                     } else {
                       Map<dynamic, dynamic> userData = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-                      return Text(
-                        'Hello, ${userData['name']}',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                        ),
+
+                      return Row(
+                        children: [
+                          userData['photoUrl'] != null && userData['photoUrl'].isNotEmpty
+                              ? CircleAvatar(
+                                  radius: 30,
+                                  backgroundImage: NetworkImage(userData['photoUrl']),
+                                )
+                              : CircleAvatar(
+                                  radius: 30,
+                                  backgroundColor: Colors.grey,
+                                  child: Icon(Icons.person, color: Colors.white, size: 30),
+                                ),
+                          SizedBox(width: 10),
+                          Text(
+                            'Hello, ${userData['name']}',
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       );
                     }
-                  }),
+                  },
                 ),
                 IconButton(
                   onPressed: () {},
