@@ -86,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
                 height: 20,
               ),
               Text(
-                'Login to continue...',
+                'Login',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
@@ -112,15 +112,15 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 obscureText: !_isPasswordVisible,
                 suffixIcon: IconButton(
-                    icon: Icon(_isPasswordVisible
-                        ? Icons.visibility_off
-                        : Icons.visibility),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
-                    },
-                  ),
+                  icon: Icon(_isPasswordVisible
+                      ? Icons.visibility_off
+                      : Icons.visibility),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
               ),
               SizedBox(
                 height: 20,
