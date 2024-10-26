@@ -10,6 +10,7 @@ import 'package:taskify/ui/project_ui/create_project.dart';
 import 'package:taskify/widgets/custom_widget.dart';
 import 'package:taskify/widgets/widget_home.dart';
 import 'package:intl/intl.dart';
+import 'package:taskify/ui/project_ui/user_account_settings_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,25 +40,42 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 StreamBuilder(
-                  stream: _database.ref('users/${_auth.currentUser!.uid}').onValue,
+                  stream:
+                      _database.ref('users/${_auth.currentUser!.uid}').onValue,
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                    if (!snapshot.hasData ||
+                        snapshot.data!.snapshot.value == null) {
                       return Container();
                     } else {
-                      Map<dynamic, dynamic> userData = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                      Map<dynamic, dynamic> userData = snapshot
+                          .data!.snapshot.value as Map<dynamic, dynamic>;
 
                       return Row(
                         children: [
-                          userData['photoUrl'] != null && userData['photoUrl'].isNotEmpty
-                              ? CircleAvatar(
-                                  radius: 30,
-                                  backgroundImage: NetworkImage(userData['photoUrl']),
-                                )
-                              : CircleAvatar(
-                                  radius: 30,
-                                  backgroundColor: Colors.grey,
-                                  child: Icon(Icons.person, color: Colors.white, size: 30),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      UserAccountSettingsPage(),
                                 ),
+                              );
+                            },
+                            child: userData['photoUrl'] != null &&
+                                    userData['photoUrl'].isNotEmpty
+                                ? CircleAvatar(
+                                    radius: 30,
+                                    backgroundImage:
+                                        NetworkImage(userData['photoUrl']),
+                                  )
+                                : CircleAvatar(
+                                    radius: 30,
+                                    backgroundColor: Colors.grey,
+                                    child: Icon(Icons.person,
+                                        color: Colors.white, size: 30),
+                                  ),
+                          ),
                           SizedBox(width: 10),
                           Text(
                             'Hello, ${userData['name']}',
@@ -110,10 +128,12 @@ class _HomePageState extends State<HomePage> {
                                 .equalTo(false)
                                 .onValue,
                             builder: ((context, snapshot) {
-                              if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                              if (!snapshot.hasData ||
+                                  snapshot.data!.snapshot.value == null) {
                                 return Container();
                               } else {
-                                Map<dynamic, dynamic> projects = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                                Map<dynamic, dynamic> projects = snapshot.data!
+                                    .snapshot.value as Map<dynamic, dynamic>;
                                 return projects.length > 1
                                     ? Text(
                                         '${projects.length} projects',
@@ -173,10 +193,12 @@ class _HomePageState extends State<HomePage> {
                                 .equalTo(false)
                                 .onValue,
                             builder: (context, snapshot) {
-                              if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                              if (!snapshot.hasData ||
+                                  snapshot.data!.snapshot.value == null) {
                                 return Container();
                               } else {
-                                Map<dynamic, dynamic> projects = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                                Map<dynamic, dynamic> projects = snapshot.data!
+                                    .snapshot.value as Map<dynamic, dynamic>;
                                 return Center(
                                   child: Text(
                                     projects.length.toString(),
@@ -204,17 +226,20 @@ class _HomePageState extends State<HomePage> {
                             .equalTo(false)
                             .onValue,
                         builder: (context, snapshot) {
-                          if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                          if (!snapshot.hasData ||
+                              snapshot.data!.snapshot.value == null) {
                             return Container();
                           } else {
-                            Map<dynamic, dynamic> projects = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                            Map<dynamic, dynamic> projects = snapshot
+                                .data!.snapshot.value as Map<dynamic, dynamic>;
                             return ListView.builder(
                               itemCount: projects.length,
                               physics: BouncingScrollPhysics(),
                               scrollDirection: Axis.horizontal,
                               itemBuilder: ((context, index) {
                                 var project = projects.values.elementAt(index);
-                                var time = DateFormat('d MMM y').format(DateTime.parse(project['createDate']));
+                                var time = DateFormat('d MMM y').format(
+                                    DateTime.parse(project['createDate']));
                                 return CustomContainer(
                                   description: project['description'],
                                   title: project['name'],
@@ -246,10 +271,14 @@ class _HomePageState extends State<HomePage> {
                               .equalTo(true)
                               .onValue,
                           builder: ((context, snapshot) {
-                            if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                            if (!snapshot.hasData ||
+                                snapshot.data!.snapshot.value == null) {
                               return Container();
                             } else {
-                              Map<dynamic, dynamic> finishedProjects = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                              Map<dynamic, dynamic> finishedProjects = snapshot
+                                  .data!
+                                  .snapshot
+                                  .value as Map<dynamic, dynamic>;
                               return Container(
                                 height: 25,
                                 width: 30,
@@ -281,17 +310,21 @@ class _HomePageState extends State<HomePage> {
                           .equalTo(true)
                           .onValue,
                       builder: ((context, snapshot) {
-                        if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                        if (!snapshot.hasData ||
+                            snapshot.data!.snapshot.value == null) {
                           return Container();
                         } else {
-                          Map<dynamic, dynamic> finishedProjects = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                          Map<dynamic, dynamic> finishedProjects = snapshot
+                              .data!.snapshot.value as Map<dynamic, dynamic>;
                           return ListView.builder(
                             itemCount: finishedProjects.length,
                             shrinkWrap: true,
                             physics: NeverScrollableScrollPhysics(),
                             itemBuilder: ((context, index) {
-                              var project = finishedProjects.values.elementAt(index);
-                              var time = DateFormat('d MMM y').format(DateTime.parse(project['createDate']));
+                              var project =
+                                  finishedProjects.values.elementAt(index);
+                              var time = DateFormat('d MMM y').format(
+                                  DateTime.parse(project['createDate']));
                               return WidgetHome(
                                 description: project['description'],
                                 progress_percentage: '100',

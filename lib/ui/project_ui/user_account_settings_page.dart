@@ -209,93 +209,81 @@ class _UserAccountSettingsPageState extends State<UserAccountSettingsPage> {
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 20),
-
-                  // Show selected image or default placeholder
-                  Center(
-                    child: _imageFile != null
-                        ? ClipOval(
-                            child: Image.file(
-                              _imageFile!,
-                              width: 150,
-                              height: 150,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : (_photoUrlController.text.isNotEmpty
-                            ? CircleAvatar(
-                                radius: 100,
-                                backgroundImage:
-                                    NetworkImage(_photoUrlController.text),
-                              )
-                            : CircleAvatar(
-                                radius: 50,
-                                backgroundColor: Colors.grey[300],
-                                child: Icon(Icons.person,
-                                    size: 50, color: Colors.white),
-                              )),
-                  ),
-                  SizedBox(height: 5),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _pickImage,
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius
-                              .zero, // Square shape (no rounded corners)
-                        ),
-                      ),
-                      child: Text('Change Photo'),
-                    ),
-                  ),
-                  TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(labelText: 'Name'),
-                  ),
-                  SizedBox(height: 10),
-                  TextField(
-                    controller: _surnameController,
-                    decoration: InputDecoration(labelText: 'Surname'),
-                  ),
-                  SizedBox(height: 10),
-                  TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(labelText: 'Email'),
-                  ),
-                  SizedBox(height: 10),
-                  TextField(
-                    controller: _photoUrlController,
-                    decoration: InputDecoration(labelText: 'Photo URL'),
-                  ),
-                  // SizedBox(height: 20),
-
-                  // // Show loader during the update process
-                  // isUpdating
-                  //     ? Center(child: CircularProgressIndicator())
-                  //     : ElevatedButton(
-                  //         onPressed: updateUserData,
-                  //         style: ElevatedButton.styleFrom(
-                  //           backgroundColor: ThemeColors().purpleAccent, // Set the button's background color
-                  //           foregroundColor: Colors.white,
-                  //         ),
-                  //         child: Text('Update Info'),
-                  //       ),
-                  SizedBox(height: 10),
-                  TextField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                    ),
-                    obscureText: true,
-                  ),
-                ],
+          : SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 20),
+              Center(
+                child: GestureDetector(
+                  onTap: _pickImage,
+                  child: _imageFile != null
+                      ? ClipOval(
+                          child: Image.file(
+                            _imageFile!,
+                            width: 150,
+                            height: 150,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : (_photoUrlController.text.isNotEmpty
+                          ? CircleAvatar(
+                              radius: 100,
+                              backgroundImage: NetworkImage(_photoUrlController.text),
+                            )
+                          : CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Colors.grey[300],
+                              child: Icon(Icons.person, size: 50, color: Colors.white),
+                            )),
+                ),
               ),
-            ),
+              SizedBox(height: 5),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _pickImage,
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                  ),
+                  child: Text('Change Photo'),
+                ),
+              ),
+              TextField(
+                controller: _nameController,
+                decoration: InputDecoration(labelText: 'Name'),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                controller: _surnameController,
+                decoration: InputDecoration(labelText: 'Surname'),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: 'Email'),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                controller: _photoUrlController,
+                decoration: InputDecoration(labelText: 'Photo URL'),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                controller: _passwordController,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                ),
+                obscureText: true,
+              ),
+              SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
