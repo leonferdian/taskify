@@ -35,7 +35,8 @@ class _PersonalProjectState extends State<PersonalProject> {
   final TextEditingController _name = TextEditingController();
   final TextEditingController _description = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseDatabase _database = FirebaseDatabase.instance; // Change here from Firestore to Realtime Database
+  final FirebaseDatabase _database = FirebaseDatabase
+      .instance; // Change here from Firestore to Realtime Database
 
   Uint8List? _image;
   final CustomLoader _loader = CustomLoader();
@@ -73,7 +74,8 @@ class _PersonalProjectState extends State<PersonalProject> {
     String projectId = Uuid().v1();
     String name = _name.text.trim();
     String description = _description.text.trim();
-    var illustrationList = _illustrations[Random().nextInt(_illustrations.length)];
+    var illustrationList =
+        _illustrations[Random().nextInt(_illustrations.length)];
 
     try {
       // Check if the image is not null
@@ -96,6 +98,7 @@ class _PersonalProjectState extends State<PersonalProject> {
         'logoUrl': logoUrl,
         'illustration': illustrationList,
         'admin': _auth.currentUser!.uid,
+        'isNew': true, // New field for notifications
       });
 
       // Add project to all selected users in Realtime Database
@@ -135,7 +138,7 @@ class _PersonalProjectState extends State<PersonalProject> {
       // Log the error in detail
       // developer.log('Error creating project: ${error.toString()}');
       print('Error creating project: ${error.toString()}');
-      
+
       // Show the error message in a toast
       Fluttertoast.showToast(
         msg: error.toString(),

@@ -36,17 +36,26 @@ class _ChooseMembersState extends State<ChooseMembers> {
 
   // Fetch all users from the database
   fetchAllUsers() async {
-    await _database.reference().child('users').once().then((DatabaseEvent event) {
+    await _database
+        .reference()
+        .child('users')
+        .once()
+        .then((DatabaseEvent event) {
       final dataSnapshot = event.snapshot;
       if (dataSnapshot.value != null) {
         final data = dataSnapshot.value as Map<dynamic, dynamic>;
         setState(() {
-          allUsers = data.values.map((user) {
-            return user as Map<dynamic, dynamic>;
-          }).toList().map((user) {
-            // Convert the dynamic map to a map with String keys
-            return user.map((key, value) => MapEntry(key.toString(), value));
-          }).toList();
+          allUsers = data.values
+              .map((user) {
+                return user as Map<dynamic, dynamic>;
+              })
+              .toList()
+              .map((user) {
+                // Convert the dynamic map to a map with String keys
+                return user
+                    .map((key, value) => MapEntry(key.toString(), value));
+              })
+              .toList();
         });
       }
     });
@@ -71,7 +80,8 @@ class _ChooseMembersState extends State<ChooseMembers> {
 
             setState(() {
               // Convert the dynamic map to a map with String keys
-              userMap = firstUser.map((key, value) => MapEntry(key.toString(), value));
+              userMap = firstUser
+                  .map((key, value) => MapEntry(key.toString(), value));
             });
           } else {
             // Clear userMap if no results are found
@@ -270,7 +280,8 @@ class _ChooseMembersState extends State<ChooseMembers> {
             // Display all users below the search field
             ...allUsers.map((user) {
               // Check if the user is already in membersList to prevent duplicates
-              bool isMember = membersList.any((member) => member['uid'] == user['uid']);
+              bool isMember =
+                  membersList.any((member) => member['uid'] == user['uid']);
               return ListTile(
                 onTap: () {
                   if (!isMember) {
@@ -316,6 +327,23 @@ class _ChooseMembersState extends State<ChooseMembers> {
           ],
         ),
       ),
+      floatingActionButton: membersList.length >= 2
+          ? FloatingActionButton(
+              backgroundColor: ThemeColors().blue,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PersonalProject(
+                      membersList: membersList,
+                    ),
+                  ),
+                );
+                //Navigator.pop(context);
+              },
+              child: Icon(Icons.arrow_forward, color: Colors.white),
+            )
+          : SizedBox(),
     );
   }
 }

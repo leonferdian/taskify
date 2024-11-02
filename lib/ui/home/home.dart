@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:taskify/theme/theme_colors.dart';
+import 'package:taskify/ui/project_ui/NotificationsPage.dart';
 import 'package:taskify/ui/project_ui/choose_members.dart';
 import 'package:taskify/ui/project_ui/create_project.dart';
 import 'package:taskify/widgets/custom_widget.dart';
@@ -22,6 +23,36 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final FirebaseDatabase _database = FirebaseDatabase.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  int _notificationCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _getNewProjectsCount();
+  }
+
+  void _getNewProjectsCount() {
+    final userId = _auth.currentUser?.uid;
+
+    if (userId != null) {
+      _database.ref('users/$userId/projects').onValue.listen((event) {
+        int newProjects = 0;
+
+        final projectsData = event.snapshot.value as Map?;
+        if (projectsData != null) {
+          projectsData.forEach((projectId, projectData) {
+            if (projectData['isNew'] == true) {
+              newProjects++;
+            }
+          });
+        }
+
+        setState(() {
+          _notificationCount = newProjects;
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,9 +121,32 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
                 IconButton(
-                  onPressed: () {},
                   icon: Icon(Icons.notifications, color: Colors.black),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => NotificationsPage()),
+                    );
+                    _clearNewNotifications();
+                  },
                 ),
+                if (_notificationCount > 0)
+                  Positioned(
+                    right: 12,
+                    top: 12,
+                    child: Container(
+                      padding: EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '$_notificationCount',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ),
+                  ),
               ],
             ),
             SizedBox(height: 25),
@@ -365,5 +419,27 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  // Clear notification count by marking all projects as not new
+  Future<void> _clearNewNotifications() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId != null) {
+      final userProjectsRef = _database.ref('users/$userId/projects');
+      final snapshot = await userProjectsRef.get();
+
+      if (snapshot.exists) {
+        final Map<dynamic, dynamic> projects =
+            snapshot.value as Map<dynamic, dynamic>;
+
+        for (var key in projects.keys) {
+          await userProjectsRef.child('$key/isNew').set(false);
+        }
+      }
+    }
+
+    setState(() {
+      _notificationCount = 0;
+    });
   }
 }
