@@ -7,6 +7,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:taskify/theme/theme_colors.dart';
+import 'package:taskify/ui/project_ui/EditProjectPage.dart';
 import 'package:taskify/widgets/list_container.dart';
 
 class ProjectsList extends StatefulWidget {
@@ -18,7 +19,8 @@ class ProjectsList extends StatefulWidget {
 
 class _ProjectsListState extends State<ProjectsList> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseDatabase _database = FirebaseDatabase.instance; // Using Realtime Database
+  final FirebaseDatabase _database =
+      FirebaseDatabase.instance; // Using Realtime Database
   final List<Color> _list = [
     ThemeColors().blue,
     ThemeColors().pink,
@@ -75,27 +77,45 @@ class _ProjectsListState extends State<ProjectsList> {
                       return Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                    } else if (!snapshot.hasData ||
+                        snapshot.data!.snapshot.value == null) {
                       return Center(child: Text('No projects found.'));
                     } else {
-                      Map<dynamic, dynamic> projects = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                      Map<dynamic, dynamic> projects = snapshot
+                          .data!.snapshot.value as Map<dynamic, dynamic>;
                       List<dynamic> projectList = projects.values.toList();
 
                       return ListView.builder(
                         itemCount: projectList.length,
                         physics: BouncingScrollPhysics(),
                         itemBuilder: ((context, index) {
-                          var colorsList = _list[Random().nextInt(_list.length)];
+                          var colorsList =
+                              _list[Random().nextInt(_list.length)];
                           var project = projectList[index];
 
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: ListContainer(
-                              colorsList: colorsList,
-                              illustration: project['illustration'],
-                              description: project['description'],
-                              title: project['name'],
-                              logourl: project['logoUrl'],
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditProjectPage(
+                                    projectId: project['projectId'],
+                                    initialName: project['name'],
+                                    initialDescription: project['description'],
+                                    initialLogoUrl: project['logoUrl'],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: ListContainer(
+                                colorsList: colorsList,
+                                illustration: project['illustration'],
+                                description: project['description'],
+                                title: project['name'],
+                                logourl: project['logoUrl'],
+                              ),
                             ),
                           );
                         }),

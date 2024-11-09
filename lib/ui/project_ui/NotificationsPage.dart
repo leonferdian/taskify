@@ -37,11 +37,49 @@ class NotificationsPage extends StatelessWidget {
                       trailing: project['isNew'] == true
                           ? Icon(Icons.circle, color: Colors.red, size: 10)
                           : null,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProjectDetailsPage(
+                              project: project,
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                 );
               },
             ),
+    );
+  }
+}
+
+class ProjectDetailsPage extends StatelessWidget {
+  final Map project;
+
+  const ProjectDetailsPage({Key? key, required this.project}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(project['name'] ?? 'Project Details')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Project Name: ${project['name'] ?? ''}',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            Text('Description: ${project['description'] ?? ''}'),
+            SizedBox(height: 10),
+            Text('Status: ${project['status'] ?? 'Not available'}'),
+            // Add more fields as needed
+          ],
+        ),
+      ),
     );
   }
 }
